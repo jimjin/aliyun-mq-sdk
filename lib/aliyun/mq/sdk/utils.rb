@@ -23,6 +23,10 @@ module Aliyun::Mq::Sdk
       def build_sign(sign_str, secret_key)
         Base64.encode64("#{OpenSSL::HMAC.digest("sha1", secret_key, sign_str)}").strip
       end
+
+      def md5(cnt)
+        Digest::MD5.hexdigest(cnt)
+      end
     end
   end
 end

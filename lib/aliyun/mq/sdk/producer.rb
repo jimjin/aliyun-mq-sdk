@@ -32,8 +32,9 @@ module Aliyun::Mq::Sdk
       is_order = opts[:is_order]
       sharding_key = opts[:sharding_key]
 
-      query = {"topic" => topic, "time" => @time, "tag" => tag}
+      query = {"topic" => topic, "time" => @time}
 
+      query["tag"] = tag if tag
       query["key"] = key if key
 
       if is_order && sharding_key != null
