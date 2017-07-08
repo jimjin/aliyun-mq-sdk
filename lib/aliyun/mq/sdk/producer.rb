@@ -44,6 +44,7 @@ module Aliyun::Mq::Sdk
       else
         rslt = {success: false, msg: res.response}
       end
+      p rslt
       rslt
     end
   end
