@@ -1,0 +1,6 @@
+class Config
+  AK = 'pls input ak here'
+  SK = 'pls input sk here'
+  PRODUCER_ID_1 = 'PID-ALIYUN-MQ-SDK-DEV'
+  TOPIC_1 = 'aliyun-mq-sdk-dev-01'
+end

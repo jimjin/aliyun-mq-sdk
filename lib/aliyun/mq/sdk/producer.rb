@@ -1,12 +1,8 @@
 module Aliyun::Mq::Sdk
-  class producer
+  class Producer
     include HTTParty
 
-    # 公有云生产环境：http://onsaddr-internal.aliyun.com:8080/rocketmq/nsaddr4client-internal
-    # 公有云公测环境：http://onsaddr-internet.aliyun.com/rocketmq/nsaddr4client-internet
-    # 杭州金融云环境：http://jbponsaddr-internal.aliyun.com:8080/rocketmq/nsaddr4client-internal
-    # 杭州深圳云环境：http://mq4finance-sz.addr.aliyun.com:8080/rocketmq/nsaddr4client-internal
-    DEFAULT_BASE_URI = 'http://onsaddr-internal.aliyun.com:8080/rocketmq/nsaddr4client-internal'
+    DEFAULT_BASE_URI = 'http://publictest-rest.ons.aliyun.com/message/'
 
     attr_accessor :access_key, :secret_key, :producer_id, :region_url, :default_topic, :topic
 
@@ -21,27 +17,35 @@ module Aliyun::Mq::Sdk
 
     def headers(msg, time)
       sign = Auth.post_sign(secret_key, topic, producer_id, msg, time)
-      {"Signature" => sign, "AccessKey" => access_key, "ProducerID" => producer_id}
+      {"Signature" => sign, "AccessKey" => access_key, "ProducerID" => producer_id, "Content-Type" => 'text/html;charset=UTF-8'}
     end
 
     def send(msg, opts={})
-      @time = Time.now.to_i.to_s
+      @time = Time.now.to_i * 1000
       @topic = opts[:topic] || default_topic
       tag = opts[:tag]
       key = opts[:key]
       is_order = opts[:is_order]
       sharding_key = opts[:sharding_key]
 
+      hds = headers(msg, @time)
+
       query = {"topic" => topic, "time" => @time}
 
-      query["tag"] = tag if tag
-      query["key"] = key if key
+      query["Tag"] = tag if tag
+      query["Key"] = key if key
 
-      if is_order && sharding_key != null
-        query = query.merge("isOrder" => is_order, "shardingKey" => sharding_key)
+      if is_order && !sharding_key.nil?
+        hds = hds.merge("isOrder" => is_order.to_s, "shardingKey" => sharding_key)
       end
-
-      self.class.post(region_url, headers: headers(msg, @time), query: query)
+      res = self.class.post(region_url, headers: hds, query: query, body: msg)
+      if res.parsed_response
+        rslt = JSON.parse(res.parsed_response).merge(success: true)
+      else
+        rslt = {success: false, msg: res.response}
+      end
+      p rslt
+      rslt
     end
   end
 end

@@ -1,6 +1,6 @@
 module Aliyun::Mq::Sdk
-  class consumer
+  class Consumer
     include HTTParty
-    
+
   end
 end
