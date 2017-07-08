@@ -40,11 +40,10 @@ module Aliyun::Mq::Sdk
       end
       res = self.class.post(region_url, headers: hds, query: query, body: msg)
       if res.parsed_response
-        rslt = JSON.parse(res.parsed_response).merge(success: true)
+        rslt = JSON.parse(res.parsed_response).merge(success: true).symbolize_keys
       else
         rslt = {success: false, msg: res.response}
       end
-      p rslt
       rslt
     end
   end
