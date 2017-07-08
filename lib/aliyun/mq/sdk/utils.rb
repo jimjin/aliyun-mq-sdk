@@ -10,6 +10,21 @@ module Aliyun::Mq::Sdk
       def symbolize_keys(h)
         h = h.inject({}){|memo, (k, v)| memo[k.to_sym] = v; memo}
       end
+
+      def deep_symbolize_keys(obj)
+        if obj.is_a?(Array)
+          obj.map do |item|
+            deep_symbolize_keys(item)
+          end
+        elsif obj.is_a?(Hash)
+          obj.inject({}) do |memo, (k, v)|
+            memo[k.to_sym] = deep_symbolize_keys(v)
+            memo
+          end
+        else
+          obj
+        end
+      end
     end
   end
 

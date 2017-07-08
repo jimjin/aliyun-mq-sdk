@@ -21,7 +21,7 @@ module Aliyun::Mq::Sdk
     end
 
     def send(msg, opts={})
-      @time = Time.now.to_i * 1000
+      @time = opts[:time] || Time.now.to_i * 1000
       @topic = opts[:topic] || default_topic
       tag = opts[:tag]
       key = opts[:key]

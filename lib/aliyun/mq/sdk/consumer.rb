@@ -16,10 +16,9 @@ module Aliyun::Mq::Sdk
     end
 
     def receive(opts={})
-      @time = Time.now.to_i * 1000
+      @time = opts[:time] || Time.now.to_i * 1000
       @topic = opts[:topic] || default_topic
       @num = opts[:num]
-      @sharding_key = opts[:sharding_key]
 
       sign = Auth.get_sign(secret_key, topic, consumer_id, @time)
       headers = {"Signature" => sign, "AccessKey" => access_key, "ConsumerID" => consumer_id, "Content-Type" => 'text/html;charset=UTF-8'}
@@ -27,11 +26,10 @@ module Aliyun::Mq::Sdk
       query = {"topic" => topic, "time" => @time}
 
       query["num"] = @num if @num
-      query["shardingKey"] = @sharding_key if @sharding_key
 
       res = self.class.get(region_url, headers: headers, query: query)
       if res.parsed_response
-        rslt = {success: true, items: JSON.parse(res.parsed_response)}
+        rslt = {success: true, items: Utils.deep_symbolize_keys(JSON.parse(res.parsed_response))}
       else
         rslt = {success: false, msg: res.response}
       end
@@ -40,7 +38,29 @@ module Aliyun::Mq::Sdk
       rslt
     end
 
-    def delete()
+    def delete(msg_handle, opts={})
+      @time = opts[:time] || Time.now.to_i * 1000
+      @topic = opts[:topic] || default_topic
+
+      sign = Auth.del_sign(secret_key, topic, consumer_id, msg_handle, @time)
+      headers = {"Signature" => sign, "AccessKey" => access_key, "ConsumerID" => consumer_id, "Content-Type" => 'text/html;charset=UTF-8'}
+
+      query = {"topic" => topic, "msgHandle" => msg_handle, "time" => @time}
+
+      res = self.class.delete(region_url, headers: headers, query: query)
+      p query
+      if res.code === 204
+        rslt = {success: true}
+      else
+        if res.parsed_response
+          rslt = Utils.symbolize_keys(JSON.parse(res.parsed_response).merge(success: false))
+        else
+          rslt = {success: false, msg: res.response}
+        end
+      end
+      p res
+      p rslt
+      rslt
     end
   end
 end
