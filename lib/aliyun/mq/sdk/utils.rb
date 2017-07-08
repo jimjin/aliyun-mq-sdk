@@ -6,15 +6,17 @@ Digest::SHA1.hexdigest 'foo'
 
 module Aliyun::Mq::Sdk
   class Utils
+    class << self
+      def symbolize_keys(h)
+        h = h.inject({}){|memo, (k, v)| memo[k.to_sym] = v; memo}
+      end
+    end
   end
 
   class Auth
     class << self
       def post_sign(secret_key, topic, producer_id, msg, date)
-        p [secret_key, topic, producer_id, md5(msg), date].join("\n")
         s = build_sign([topic, producer_id, md5(msg), date].join("\n"), secret_key)
-        p s
-        s
       end
 
       def get_sign(secret_key, topic, consumer_id, date)
