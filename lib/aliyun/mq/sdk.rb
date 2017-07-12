@@ -4,6 +4,7 @@ require "aliyun/mq/sdk/utils"
 require "aliyun/mq/sdk/producer"
 require "aliyun/mq/sdk/consumer"
 require 'JSON'
+require 'stomp'
 
 module Aliyun
   module Mq

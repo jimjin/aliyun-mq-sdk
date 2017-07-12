@@ -21,7 +21,7 @@ module Aliyun::Mq::Sdk
     end
 
     def send(msg, opts={})
-      @time = opts[:time] || Time.now.to_i * 1000
+      @time = opts[:time] || (Time.now.to_f * 1000).to_i
       @topic = opts[:topic] || default_topic
       tag = opts[:tag]
       key = opts[:key]
@@ -32,8 +32,8 @@ module Aliyun::Mq::Sdk
 
       query = {"topic" => topic, "time" => @time}
 
-      query["Tag"] = tag if tag
-      query["Key"] = key if key
+      query["tag"] = tag if tag
+      query["key"] = key if key
 
       if is_order && !sharding_key.nil?
         hds = hds.merge("isOrder" => is_order.to_s, "shardingKey" => sharding_key)
@@ -44,7 +44,6 @@ module Aliyun::Mq::Sdk
       else
         rslt = {success: false, msg: res.response}
       end
-      p rslt
       rslt
     end
   end

@@ -16,7 +16,7 @@ module Aliyun::Mq::Sdk
     end
 
     def receive(opts={})
-      @time = opts[:time] || Time.now.to_i * 1000
+      @time = opts[:time] || (Time.now.to_f * 1000).to_i
       @topic = opts[:topic] || default_topic
       @num = opts[:num]
 
@@ -39,7 +39,7 @@ module Aliyun::Mq::Sdk
     end
 
     def delete(msg_handle, opts={})
-      @time = opts[:time] || Time.now.to_i * 1000
+      @time = opts[:time] || (Time.now.to_f * 1000).to_i
       @topic = opts[:topic] || default_topic
 
       sign = Auth.del_sign(secret_key, topic, consumer_id, msg_handle, @time)

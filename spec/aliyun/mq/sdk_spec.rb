@@ -15,10 +15,10 @@ describe Aliyun::Mq::Sdk do
 
   it 'producer send order' do
     producer = Aliyun::Mq::Sdk::Producer.new(@access_key, @secret_key, @producer_1)
-    r = producer.send('test order msg', topic: @topic_1, is_order: true)
+    r = producer.send('test order msg', topic: @topic_1, is_order: true, key: Time.now.to_f.to_s.gsub(/\./, '').rjust(32, '0'), sharding_key: 'print')
     expect(r[:success]).to be true
     expect(r[:msgId]).not_to be nil
-    expect(r[:sendStatus]).to be 'SEND_OK'
+    expect(r[:sendStatus]).to be == 'SEND_OK'
   end
 
   it 'consumer receive msg' do
@@ -36,7 +36,7 @@ describe Aliyun::Mq::Sdk do
 
   it 'consumer delete msg exists' do
     producer = Aliyun::Mq::Sdk::Producer.new(@access_key, @secret_key, @producer_1)
-    producer.send('test order msg for delete', topic: @topic_1, is_order: true)
+    producer.send('test order msg for delete', topic: @topic_1, is_order: true, key: Time.now.to_f.to_s.gsub(/\./, '').rjust(32, '0'), sharding_key: 'print')
 
     consumer = Aliyun::Mq::Sdk::Consumer.new(@access_key, @secret_key, @consumer_1)
     r = consumer.receive(topic: @topic_1)
@@ -47,16 +47,16 @@ describe Aliyun::Mq::Sdk do
 
   it 'consumer delete msg not exists' do
     consumer = Aliyun::Mq::Sdk::Consumer.new(@access_key, @secret_key, @consumer_1)
-    r = consumer.delete('not exists msg handle', topic: @topic_1)
+    r = consumer.delete('not exists msg handle')
     expect(r[:success]).to be false
-    expect(r[:code]).to be "TOPIC_NOT_EXIST"
   end
 
   it 'msg order is true' do
     arr = []
-    1.upto(50) do |i|
+    times = 50
+    1.upto(times) do |i|
       producer = Aliyun::Mq::Sdk::Producer.new(@access_key, @secret_key, @producer_1)
-      r = producer.send("test order is true msg #{i}", topic: @topic_1, is_order: true)
+      r = producer.send("test order is true msg #{i}", topic: @topic_1, is_order: true, key: Time.now.to_f.to_s.gsub(/\./, '').rjust(32, '0'), sharding_key: 'print')
       arr << r[:msgId]
     end
 
@@ -64,15 +64,11 @@ describe Aliyun::Mq::Sdk do
     items = consumer.receive(topic: @topic_1)[:items]
     all_items = items
     while !items.empty?
-      items = consumer.receive(topic: @topic_1)[:items]
+      items = consumer.receive(topic: @topic_1, num: 32)[:items]
       all_items += items
-      sleep 2
     end
-    p all_items.map {|item| item[:msgId]}
-    p arr
-    binding.pry
-    expect(all_items.size).to be arr.size
-    expect(all_items.map {|item| item[:msgId]}).to be arr
+    expect(all_items.size).to be >= arr.size
+    expect(all_items.map {|item| item[:msgId]}[-50..-1]).to be == arr
     all_items.each do |item|
       r55 = consumer.delete(item[:msgHandle], topic: @topic_1)
     end
