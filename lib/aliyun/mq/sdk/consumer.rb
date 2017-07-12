@@ -33,8 +33,6 @@ module Aliyun::Mq::Sdk
       else
         rslt = {success: false, msg: res.response}
       end
-      p res
-      p rslt
       rslt
     end
 
@@ -48,7 +46,6 @@ module Aliyun::Mq::Sdk
       query = {"topic" => topic, "msgHandle" => msg_handle, "time" => @time}
 
       res = self.class.delete(region_url, headers: headers, query: query)
-      p query
       if res.code === 204
         rslt = {success: true}
       else

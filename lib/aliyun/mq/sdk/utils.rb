@@ -2,7 +2,6 @@ require "digest"
 require "base64"
 require "openssl"
 require 'digest/sha1'
-Digest::SHA1.hexdigest 'foo'
 
 module Aliyun::Mq::Sdk
   class Utils
